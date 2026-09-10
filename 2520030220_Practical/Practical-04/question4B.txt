@@ -1,0 +1,33 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+int main() {
+    pid_t pid = fork();
+
+    if (pid < 0) {
+        perror("fork failed");
+        exit(1);
+    } else if (pid == 0) {
+        printf("[CHILD] PID: %d - Exiting immediately\n", getpid());
+        exit(0);
+    } else {
+        printf("[PARENT] PID: %d - Created Child PID: %d\n", getpid(), pid);
+        printf("[PARENT] Sleeping for 15s without wait() -> Zombie created\n");
+        sleep(15);
+
+        int status;
+        printf("[PARENT] Calling wait() to eliminate Zombie...\n");
+        wait(&status);
+        if (WIFEXITED(status)) {
+            printf("[PARENT] Child PID %d reaped successfully.\n", pid);
+        }
+
+        printf("[PARENT] Sleeping for 5s cleanly before exiting\n");
+        sleep(5);
+    }
+
+    return 0;
+}
